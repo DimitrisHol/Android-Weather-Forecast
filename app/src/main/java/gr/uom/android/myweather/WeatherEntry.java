@@ -1,6 +1,8 @@
 package gr.uom.android.myweather;
 
-public class DayForecast {
+import java.io.Serializable;
+
+public class WeatherEntry implements Serializable {
 
 
 
@@ -16,7 +18,7 @@ public class DayForecast {
     private String date;
     private String time;
 
-    public DayForecast(){
+    public WeatherEntry(){
 
     }
 
@@ -96,7 +98,7 @@ public class DayForecast {
 
     @Override
     public String toString() {
-        return "DayForecast{" +
+        return "WeatherEntry{" +
                 "currentTemperature='" + currentTemperature + '\'' +
                 ", tempMin='" + tempMin + '\'' +
                 ", tempMax='" + tempMax + '\'' +

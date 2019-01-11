@@ -13,15 +13,15 @@ import java.util.List;
 
 public class ForecastAdapter extends ArrayAdapter {
 
-
-    private List<DayForecast> dataSet;
+    //Here we have a list of WeatherEntries , Weather adapter has just a list of Strings
+    private List<WeatherEntry> dataSet;
 
     private final LayoutInflater inflater;
     private final int layoutResource;
 
 
     //Constructor
-    public ForecastAdapter(@NonNull Context context, int resource, @NonNull List<DayForecast> objects) {
+    public ForecastAdapter(@NonNull Context context, int resource, @NonNull List<WeatherEntry> objects) {
         super(context, resource, objects);
 
         dataSet = objects;
@@ -31,15 +31,19 @@ public class ForecastAdapter extends ArrayAdapter {
     }
 
 
-//    public List<DayForecast> getDataSet() {
+//    public List<WeatherEntry> getDataSet() {
 //        return dataSet;
 //    }
 
-    public DayForecast getDayForecast(int position){
+    public WeatherEntry getDayForecast(int position){
         if (position < dataSet.size()){
             return dataSet.get(position);
         }
-        return new DayForecast();
+        return new WeatherEntry();
+    }
+    public void setDataSet(List<WeatherEntry> dataSet) {
+        this.dataSet = dataSet;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -47,32 +51,28 @@ public class ForecastAdapter extends ArrayAdapter {
         return dataSet.size();
     }
 
-    public void setDataSet(List<DayForecast> dataSet) {
-        this.dataSet = dataSet;
-        notifyDataSetChanged();
-    }
 
     // Buffer, γεμιζει την πρωτη φορα για να μην χρειαζεται να καλεις για καθε στοιχειο ολα τα δεδομενα
     static class ForecastHolder {
 
         public TextView time;
-//        public TextView temperature;
+        public TextView temperature;
         public TextView description;
 
         //TODO PUT IMAGE HERE
 
 //        public TextView max;
 //        public TextView min;
-        public TextView maxmin;
+//        public TextView maxmin;
 
         public ForecastHolder(View Item){
 
-            time = Item.findViewById(R.id.timeView);
-//            temperature = Item.findViewById(R.id.temperatureView);
+            time = Item.findViewById(R.id.timeText);
+            temperature = Item.findViewById(R.id.temperatureView);
             description = Item.findViewById(R.id.weatherDescView);
 //            max = Item.findViewById(R.id.maxView);
 //            min = Item.findViewById(R.id.minView);
-            maxmin = Item.findViewById(R.id.maxminView);
+//            maxmin = Item.findViewById(R.id.maxminView);
 
         }
     }
@@ -95,12 +95,15 @@ public class ForecastAdapter extends ArrayAdapter {
             forecastHolder = (ForecastHolder) convertView.getTag();
         }
 
-        DayForecast forecast = dataSet.get(position);
+        WeatherEntry forecast = dataSet.get(position);
 
         forecastHolder.time.setText(forecast.getTime());
-//        forecastHolder.temperature.setText(forecast.getCurrentTemperature());
+        forecastHolder.temperature.setText(forecast.getCurrentTemperature() + "˚C");
         forecastHolder.description.setText(formatDescription(forecast.getWeatherDescription()));
-        forecastHolder.maxmin.setText(forecast.getTempMax() +"˚ / " +forecast.getTempMin() +"˚");
+
+        // Acording to API , min/max are optional, only applicable to large cities and megalopolises
+
+//        forecastHolder.maxmin.setText(forecast.getTempMax() +"˚ / " +forecast.getTempMin() +"˚");
 //        forecastHolder.max.setText(forecast.getTempMax() +"˚");
 //        forecastHolder.min.setText(forecast.getTempMin() +"˚");
 

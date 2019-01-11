@@ -2,10 +2,8 @@ package gr.uom.android.myweather;
 
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,45 +13,42 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-public class FetchWeatherTask extends AsyncTask<String , Object  , List<DayForecast> > {
+public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherEntry> > {
 
 
     private static final String LOG_TAG = "FetchWeatherTask";
 
     private String cityName; // This needs to come from user input
-    private ForecastAdapter forecastAdapter;
+    private WeatherAdapter weatherAdapter;
 
 
+    public FetchWeatherTask(WeatherAdapter weatherAdapter, String cityName) {
 
-
-    public FetchWeatherTask(ForecastAdapter forecastAdapter ,String cityName) {
-
-        this.forecastAdapter = forecastAdapter;
+        this.weatherAdapter = weatherAdapter;
         this.cityName = cityName;
 
     }
 
 
     @Override
-    protected List<DayForecast> doInBackground(String... params) {
+    protected List<WeatherEntry> doInBackground(String... params) {
 
         //To make the result more accurate just put the city name and country divided by comma.
 
-        String forecastJsonStr = null;  //Final String
+        String weatherJsonStr = null;  //Final String
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
-//        String weatherFormat = "json";    Default is json
 
-
-        // End result : "http://api.openweathermap.org/data/2.5/forecast?q=THESSALONIKI&type=like&units=metric&APPID=YOUR_API_KEY_HERE?"
-
+        //End result : "http://api.openweathermap.org/data/2.5/weather?q=THESSALONIKI,GR&type=like&units=metric&APPID=YOUR_API_KEY_HERE"
         //Building the URL for the OpenWeather API using URI:
         try {
 
-            final String baseUrl = "http://api.openweathermap.org/data/2.5/forecast?";
+            final String baseUrl = "http://api.openweathermap.org/data/2.5/weather?";
             final String queryParameter = "q";
             final String searchParameter = "type";
             final String unitsParameter = "units";
@@ -63,7 +58,7 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<DayForec
                     .appendQueryParameter(queryParameter , cityName)
                     .appendQueryParameter(searchParameter ,"like" )
                     .appendQueryParameter(unitsParameter , "metric")
-                    .appendQueryParameter(apiKeyParameter , BuildConfig.ApiKey) //TODO make the API key encrypypted
+                    .appendQueryParameter(apiKeyParameter , BuildConfig.ApiKey)
 
                     .build();
             URL url = new URL(builtURi.toString());
@@ -100,9 +95,9 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<DayForec
             }
 
             //Final string of data
-            forecastJsonStr = buffer.toString();
+            weatherJsonStr = buffer.toString();
 
-            Log.v(LOG_TAG, "Forecast JSON String: " + forecastJsonStr);
+            Log.v(LOG_TAG, "Forecast JSON String: " + weatherJsonStr);
 
         }
         catch (IOException e){
@@ -124,7 +119,7 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<DayForec
 
         //Parse the JSON format to string/class objects , and return the final list of items!
         try {
-            return getWeatherDataFromJson(forecastJsonStr);
+            return getWeatherDataFromJson(weatherJsonStr);
         }catch (JSONException e){
             Log.e(LOG_TAG, "Error, could not parse the data from JSON" + e.getMessage());
             return null;
@@ -133,113 +128,75 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<DayForec
 
 
 
-    private List<DayForecast> getWeatherDataFromJson(String forecastJsonStr) throws JSONException{
+    private List<WeatherEntry> getWeatherDataFromJson(String forecastJsonStr) throws JSONException{
 
-        // This is where we store the final results ( this will get returned).
-        List<DayForecast> dayForecasts  = new ArrayList<>();
 
         // OPW = OpenWeatherMap , this is a mapping of my variables , to the variable names from the JSON file.
 
-        final String OWP_LIST = "list";         // list , 3 hour intervals
+        final String OWP_WEATHER = "weather";   // 1 item list , containts weahter descriptions
+        final String OWP_description = "main";
         final String OWP_TEMPERATURE = "main";  // contains temperature and humidity readings
-        final String OWP_WEATHER = "weather";   // list , containts "0" , temperature descriptions
-        final String OWP_description = "description";
         final String OWP_THERMOKRASIA = "temp";
+        final String OWP_HUMIDITY = "humidity";
 
-        final String OWP_MIN = "temp_min";
-        final String OWP_MAX = "temp_max";
-        final String OWP_hum = "humidity";
-
-        final String OWP_WIND = "wind";         // contains wind speed and direction
-        final String OWP_WINDS = "speed";
-        final String OWP_WINDD = "deg";
-
-        final String OWP_date = "dt_txt";
+        final String OWP_WIND = "wind";         // contains wind speed
+        final String OWP_WINDSPEED = "speed";
 
 
+        JSONObject weatherJSON = new JSONObject(forecastJsonStr);
 
-        //TODO clouds
-
-        JSONObject forecastJson = new JSONObject(forecastJsonStr);
-
-        if ( forecastJson.getString("cod").equals("200")){
-
-            //Weather array, each item of the list is 3h apart
-            JSONArray weatherArray = forecastJson.getJSONArray(OWP_LIST);   // Create an array weatherArray, using the array "list" of the JSON file.
-
-            // Iterate through the array represanting the 3 hour period
-            //Take the important info, and put them into an class DayForecast object.
-            //Put them in the list , and return them
-
-            for (int i = 0; i < weatherArray.length(); i++) {
-
-                JSONObject forecast = weatherArray.getJSONObject(i);
-
-                //Temperatures are a child array called "main"
-                JSONObject temperatureObject = forecast.getJSONObject(OWP_TEMPERATURE);
-                double temperature = temperatureObject.getDouble(OWP_THERMOKRASIA);
-                double min = temperatureObject.getDouble(OWP_MIN);
-                double max = temperatureObject.getDouble(OWP_MAX);
-                String hum = temperatureObject.getString(OWP_hum);
-
-                // Weather descriptions are ac child list called "weather" that contains array 0
-
-                JSONObject weatherObject = forecast.getJSONArray(OWP_WEATHER).getJSONObject(0);
-                String desc = weatherObject.getString(OWP_description);  // This is different main ...
-
-                // Wind readings are in a child array called wind
-                JSONObject windObject = forecast.getJSONObject(OWP_WIND);
-                String wSpeed = windObject.getString(OWP_WINDS);
-                String wDirection = windObject.getString(OWP_WINDD);
-
-                // Date and time is just a key:value
-
-                String dateTxt = forecast.getString(OWP_date);
+        if ( weatherJSON.getString("cod").equals("200")){
 
 
-                //Create the object of DayForecast ( which really is just 3 hours)
-                DayForecast df = new DayForecast();
+            List<WeatherEntry> currentWeather  = new ArrayList<>();
+            WeatherEntry dayWeather = new WeatherEntry();
 
-                df.setCurrentTemperature(formatTemperatureReadings(temperature));
-                df.setTempMin(formatTemperatureReadings(min));
-                df.setTempMax(formatTemperatureReadings(max));
-                df.setHumidity(hum);
+            JSONObject weatherDecs = weatherJSON.getJSONArray(OWP_WEATHER).getJSONObject(0);
+            String desc = weatherDecs.getString(OWP_description);
 
-                df.setWeatherDescription(desc);
-                df.setWindSpeed(wSpeed);
-                df.setWindDirection(wDirection);
+            dayWeather.setWeatherDescription(desc);   //0
 
-                df.setDate(dateTxt.substring(0 ,10));
-                df.setTime(dateTxt.substring(11,16));
+            JSONObject readingsObj = weatherJSON.getJSONObject(OWP_TEMPERATURE);
+            double temperature = readingsObj.getDouble(OWP_THERMOKRASIA);
+            String humidity = readingsObj.getString(OWP_HUMIDITY);
+
+            dayWeather.setCurrentTemperature(formatTemperatureReadings(temperature)); //1
+            dayWeather.setHumidity(humidity); //2
+
+            JSONObject windReadings = weatherJSON.getJSONObject(OWP_WIND);
+            String windSpeed =windReadings.getString(OWP_WINDSPEED);
+
+            dayWeather.setWindSpeed(windSpeed); //3
+
+            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
+            Date date = new Date();
+            String time = formatter.format(date);
+
+            dayWeather.setTime(time);
 
 
-                dayForecasts.add(df);
+            Log.v(LOG_TAG , "Object is like this : " + dayWeather.toString());
 
-                Log.v(LOG_TAG , "Object is like this : " + df.toString());
-            }
+            currentWeather.add(dayWeather);
 
-
-            return dayForecasts;
+            return currentWeather;
         }
         else
-            Log.e(LOG_TAG , "API REQUEST RETURNED CODE : " + forecastJson.getString("cod"));
-            return dayForecasts;
+            Log.e(LOG_TAG , "API REQUEST RETURNED CODE : " + weatherJSON.getString("cod"));
+            return new ArrayList<>();
     }
 
     private String formatTemperatureReadings(double temperature){
-
         long result = Math.round(temperature);
-
         return String.valueOf(result);
 
     }
 
     @Override
-    protected void onPostExecute(List<DayForecast> dayForecasts) {
-        super.onPostExecute(dayForecasts);
-
+    protected void onPostExecute(List<WeatherEntry> dayWeather) {
+        super.onPostExecute(dayWeather);
         Log.v(LOG_TAG , "onPostExecute...");
-        forecastAdapter.setDataSet(dayForecasts);
+        weatherAdapter.setCurrentWeather(dayWeather);
     }
 
 

@@ -1,16 +1,24 @@
 package gr.uom.android.myweather;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+
 
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -19,7 +27,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "MainActivity";
 
     private String cityName;
+    private List<String> currentWeather;
     private ForecastAdapter forecastAdapter;
+    private WeatherAdapter weatherAdapter;
 
 
     @Override
@@ -31,80 +41,103 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         b.setOnClickListener(this);
 
 
+        ListView forecastlistView = findViewById(R.id.forecastListView);
+        forecastlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+
+                WeatherEntry weatherEntry = forecastAdapter.getDayForecast(position);
+
+                Intent moreDetails = new Intent(MainActivity.this , DetailsActivity.class);
+                moreDetails.putExtra("weatherObject" , weatherEntry);
+
+                startActivity(moreDetails);
+
+
+            }
+        });
+
 
     }
 
     @Override
     public void onClick(View view) {
 
-        if (view.getId() == R.id.searchButton){
+        if (view.getId() == R.id.searchButton) {
 
             // Getting the name of the city from user input
             EditText nameText = findViewById(R.id.citynameText);
             String cityName = nameText.getText().toString();
 
-            if (cityName != null){
+            if (cityName != null) {
 
-//                boolean flag = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED;
-//                if (flag) {
-                    getWeather("Thessaloniki");
-//                }
+//                getWeather("Thessaloniki,GR");
+//                getWeatherForecast("Thessaloniki,GR");
+
+                getWeather(cityName);
+                getWeatherForecast(cityName);
+
+
+                //Graphics
+                ListView listWeather = findViewById(R.id.weatherListView);
+                listWeather.setVisibility(View.VISIBLE);
+                TextView forecastTitle = findViewById(R.id.forecastTitle);
+                forecastTitle.setVisibility(View.VISIBLE);
+                ListView listForecast = findViewById(R.id.forecastListView);
+                listForecast.setVisibility(View.VISIBLE);
 
 //                // Hide keyboard after button is pressed. WORKS ONLY ON ANDROID 7.0
-//                InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(Activity.INPUT_METHOD_SERVICE);
-//                inputMethodManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
+                InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(Activity.INPUT_METHOD_SERVICE);
+                inputMethodManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
+
+                }
+
 
             }
-
-
-
-        }
     }
 
 
 
-    private void getWeather(String cityName){
+    private void getWeather(String cityName) {
 
-        ListView listView = findViewById(R.id.forecastListView);
+        ListView listView = findViewById(R.id.weatherListView);
 
-        forecastAdapter = new ForecastAdapter(MainActivity.this, R.layout.forecast_list_item, new ArrayList<DayForecast>());
-        listView.setAdapter(forecastAdapter);
+        weatherAdapter = new WeatherAdapter(MainActivity.this , R.layout.weather_list_item, new ArrayList<WeatherEntry>());
+        listView.setAdapter(weatherAdapter);
 
-        // GET/POST COMMANDS
-        Log.d(TAG , "onCreate : Starting an async Task,.... ");
+        Log.d(TAG , "Starting the Weather AsyncTask...");
 
-        FetchWeatherTask weatherTask = new FetchWeatherTask(forecastAdapter , cityName);
+        FetchWeatherTask weatherTask = new FetchWeatherTask(weatherAdapter , cityName);
         weatherTask.execute();
 
     }
 
-    //TODO :  USER LOGIN
-    //TODO :  BASH DEDOMENWN = save the DayForecast objects
-    //TODO :  Fragments : idk ισως τον current καιρο
 
+    private void getWeatherForecast(String cityName){
+
+        ListView listView = findViewById(R.id.forecastListView);
+
+        forecastAdapter = new ForecastAdapter(MainActivity.this, R.layout.forecast_list_item, new ArrayList<WeatherEntry>());
+        listView.setAdapter(forecastAdapter);
+
+        // GET/POST COMMANDS
+        Log.d(TAG , "Starting the Forecast AsyncTask...");
+
+        FetchForecastTask weatherTask = new FetchForecastTask(forecastAdapter , cityName);
+        weatherTask.execute();
+
+    }
     /*
     //TODO
-    USER LOGIN -- STILL TO FIND OUT
-    LOCAL DATABASE -- STILL TO FIND OUT
+    USER LOGIN -- STILL TO FIND OUT ( something something περισσοτερες μελοντικες forecasts αν ειναι μέλος.
+    LOCAL DATABASE -- αποθηκευει τις πόλες που εχει βάλει ο χρηστης (επιλογες insert και delete) Μια dropdown list για επιλογη και αναζητηση καιρου, αντι να γράφει ;)
     >1 ACTIVITIES -- CLICK ON FORECAST --> MORE DETAILED VIEW IN A NEW WINDOW
-    DONE ASYNC TASKS -- FETCHING DATA FROM API
+    ASYNC TASKS -- FETCHING DATA FROM API ------ DONE
     INTENTS -- CLICK ON FORECAST --> MORE DETAILED VIEW ( EXPLICIT)
-    FRAGMENTS -- CURRENT WEATHER IS A FRAGMENT
+    FRAGMENTS -- click on FORECAST --> DETAILED VIEW == FRAGMENT.
     */
-    /*
 
 
-    TODO
-    MAKE API KEYS ENCRYPTED
-    INTENT SHOWS YOU MORE DETAILED STATISTICS FROM 3-HOUR PERIOD
-    ADAPTER FOR CURRENT WEATHER - TOGETHER WITH FRAGMENT
-    ICON MAPPED FROM WEATHER?
-
-    TODO
-     */
-
-    // GIA EPIKOINWNIA ACTIVITY / FRAGMENT DES
-    // ONPOSTEXECUTE APO TO LESSON09-WEATHER
 
 
 }

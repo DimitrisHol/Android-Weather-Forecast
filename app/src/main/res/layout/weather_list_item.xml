@@ -10,30 +10,39 @@
         android:id="@+id/weatherdescText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
         android:fontFamily="sans-serif"
+
         android:text="Clear Skies"
         android:textColor="@android:color/black"
         android:textSize="24sp"
         android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="@+id/temperatureText"
-        app:layout_constraintStart_toStartOf="@+id/temperatureText"
-        app:layout_constraintTop_toBottomOf="@+id/temperatureText" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/timeText" />
 
     <TextView
         android:id="@+id/temperatureText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="20dp"
         android:fontFamily="sans-serif"
         android:text="20˚C"
         android:textColor="@android:color/black"
-        android:textSize="36sp"
+        android:textSize="30sp"
         android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@+id/weatherdescText"
+        app:layout_constraintStart_toEndOf="@+id/weatherdescText" />
+
+    <TextView
+        android:id="@+id/currentText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:gravity="top|left"
+        android:text="CURRENT"
+        android:textColor="@color/design_default_color_primary"
+        android:textSize="16sp"
+        android:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -54,10 +63,10 @@
         android:id="@+id/windtextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
         android:text="WIND SPEED"
         android:visibility="visible"
-        app:layout_constraintStart_toStartOf="@+id/humiditytextView"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/humiditytextView" />
 
     <TextView
@@ -78,23 +87,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="HUMIDITY"
         android:visibility="visible"
-        app:layout_constraintStart_toStartOf="@+id/weatherdescText"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/weatherdescText" />
 
     <TextView
         android:id="@+id/timeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+
         android:text="21:14"
-        android:textColor="@color/design_default_color_primary"
+        android:textColor="@android:color/darker_gray"
         android:textSize="18sp"
+        android:textStyle="italic"
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/currentText" />
 </android.support.constraint.ConstraintLayout>

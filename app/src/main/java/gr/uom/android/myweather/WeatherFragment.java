@@ -1,12 +1,11 @@
 package gr.uom.android.myweather;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 
 public class WeatherFragment extends Fragment {
@@ -15,7 +14,8 @@ public class WeatherFragment extends Fragment {
 
 
     public WeatherFragment() {
-        //Required empty public constructor
+
+
     }
 
     public void onCreate(Bundle savedInstanceState) {
@@ -28,7 +28,15 @@ public class WeatherFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_weather, container, false);
+        View rootView =  inflater.inflate(R.layout.fragment_weather, container, false);
+
+        return rootView;
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 
 }

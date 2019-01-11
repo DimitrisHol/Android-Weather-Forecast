@@ -14,11 +14,11 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/timeView"
+            android:id="@+id/timeText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:fontFamily="@font/allerta"
+            android:fontFamily="sans-serif"
             android:gravity="left"
             android:text="Time"
             android:textAllCaps="false"
@@ -30,11 +30,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:fontFamily="@font/allerta"
-            android:gravity="bottom|center"
+            android:fontFamily="sans-serif"
+            android:gravity="bottom|left"
             android:text="Description"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textColor="@android:color/black"
+            android:textSize="18sp" />
     </LinearLayout>
 
     <Space
@@ -44,15 +44,15 @@
         android:paddingRight="4dp" />
 
     <TextView
-        android:id="@+id/maxminView"
+        android:id="@+id/temperatureView"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_weight="1"
-        android:fontFamily="@font/allerta"
+        android:fontFamily="sans-serif"
         android:gravity="bottom|right"
         android:text="TextView"
         android:textAlignment="center"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:textColor="@color/design_default_color_primary"
+        android:textSize="24sp" />
 
 </LinearLayout>
