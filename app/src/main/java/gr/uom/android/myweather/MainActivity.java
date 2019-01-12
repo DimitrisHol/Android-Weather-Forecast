@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -27,7 +29,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "MainActivity";
 
     private String cityName;
-    private List<String> currentWeather;
     private ForecastAdapter forecastAdapter;
     private WeatherAdapter weatherAdapter;
 
@@ -39,6 +40,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Button b = findViewById(R.id.searchButton);
         b.setOnClickListener(this);
+        AutoCompleteTextView locationSearch = findViewById(R.id.citynameText);
+        locationSearch.setThreshold(1);
+        locationSearch.setOnClickListener(this);
 
 
         ListView forecastlistView = findViewById(R.id.forecastListView);
@@ -71,11 +75,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (cityName != null) {
 
-//                getWeather("Thessaloniki,GR");
-//                getWeatherForecast("Thessaloniki,GR");
+                getWeather("Thessaloniki,GR");
+                getWeatherForecast("Thessaloniki,GR");
 
-                getWeather(cityName);
-                getWeatherForecast(cityName);
+//                getWeather(cityName);
+//                getWeatherForecast(cityName);
 
 
                 //Graphics
@@ -93,7 +97,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
 
 
-            }
+
+                }
+        else if( view.getId() == R.id.citynameText) {
+
+
+            AutoCompleteTextView locationSearch = findViewById(R.id.citynameText);
+            locationSearch.setText("");
+
+
+            // Call database to retrieve all the cities the user has put in! (RUSSA)
+            String[] Cities = new String[]{
+                    "Athens,GR", "Thessaloniki,GR",
+            };
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, Cities);
+            locationSearch.setAdapter(adapter);
+
+
+        }
+
+
     }
 
 
@@ -109,6 +133,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         FetchWeatherTask weatherTask = new FetchWeatherTask(weatherAdapter , cityName);
         weatherTask.execute();
+
+
 
     }
 
@@ -138,6 +164,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     */
 
 
+
+
+    // Looking ahead
+
+
+    // Swipe to refresh
 
 
 }

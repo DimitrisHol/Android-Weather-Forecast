@@ -97,7 +97,7 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherE
             //Final string of data
             weatherJsonStr = buffer.toString();
 
-            Log.v(LOG_TAG, "Forecast JSON String: " + weatherJsonStr);
+            Log.v(LOG_TAG, "Weather JSON String: " + weatherJsonStr);
 
         }
         catch (IOException e){
@@ -128,7 +128,7 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherE
 
 
 
-    private List<WeatherEntry> getWeatherDataFromJson(String forecastJsonStr) throws JSONException{
+    private List<WeatherEntry> getWeatherDataFromJson(String weatherJsonStr) throws JSONException{
 
 
         // OPW = OpenWeatherMap , this is a mapping of my variables , to the variable names from the JSON file.
@@ -143,7 +143,7 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherE
         final String OWP_WINDSPEED = "speed";
 
 
-        JSONObject weatherJSON = new JSONObject(forecastJsonStr);
+        JSONObject weatherJSON = new JSONObject(weatherJsonStr);
 
         if ( weatherJSON.getString("cod").equals("200")){
 

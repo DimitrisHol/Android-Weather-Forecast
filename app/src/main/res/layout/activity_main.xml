@@ -9,7 +9,7 @@
     tools:layout_editor_absoluteY="81dp">
 
 
-    <EditText
+    <AutoCompleteTextView
         android:id="@+id/citynameText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
