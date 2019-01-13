@@ -2,7 +2,6 @@ package gr.uom.android.myweather;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,11 +15,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-
 import org.greenrobot.greendao.database.Database;
-import org.greenrobot.greendao.query.Query;
-import org.greenrobot.greendao.query.QueryBuilder;
-import org.greenrobot.greendao.query.WhereCondition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -183,23 +178,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         weatherTask.execute();
 
     }
-    /*
-    //TODO
-    USER LOGIN -- STILL TO FIND OUT ( something something περισσοτερες μελοντικες forecasts αν ειναι μέλος.
-    LOCAL DATABASE -- αποθηκευει τις πόλες που εχει βάλει ο χρηστης (επιλογες insert και delete) Μια dropdown list για επιλογη και αναζητηση καιρου, αντι να γράφει ;) --- DONE
-    >1 ACTIVITIES -- CLICK ON FORECAST --> MORE DETAILED VIEW IN A NEW WINDOW --- DONE
-    ASYNC TASKS -- FETCHING DATA FROM API ------ DONE
-    INTENTS -- CLICK ON FORECAST --> MORE DETAILED VIEW ( EXPLICIT) --- DONE
-    FRAGMENTS -- click on FORECAST --> DETAILED VIEW == FRAGMENT.
-    */
-
-
-
-
-    // Looking ahead
-
-
-    // Swipe to refresh
-
-
 }

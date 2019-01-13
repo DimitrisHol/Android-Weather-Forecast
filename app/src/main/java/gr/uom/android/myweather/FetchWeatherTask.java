@@ -229,8 +229,6 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherE
                 Log.d("DAO execution", "Inserted a new city ID = " + city.getId() + " " + cityName + " " + countryCode);
             }
 
-
-
             Log.v(LOG_TAG , "Object is like this : " + dayWeather.toString());
 
             currentWeather.add(dayWeather);

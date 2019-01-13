@@ -1,42 +1,38 @@
 package gr.uom.android.myweather;
 
 import android.content.Intent;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.TextView;
 
 public class DetailsActivity extends AppCompatActivity {
 
     private static final String TAG = "WelcomeActivity";
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_moreDetails);
+        setContentView(R.layout.activity_moredetails);
 
+        // Get info from MainActivity
         Intent intent = getIntent();
         WeatherEntry weatherEntry = (WeatherEntry) intent.getSerializableExtra("weatherObject");
 
-        TextView time = findViewById(R.id.timeText);
-        TextView temperature = findViewById(R.id.temperatureText);
-        TextView description = findViewById(R.id.weatherdescText);
-        TextView humidity = findViewById(R.id.humidityPercent);
-        TextView windSpeed = findViewById(R.id.windSpeed);
 
+        // Fragment doesn't like waiting for information... ( 2nd time's the charm)
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
-        time.setText(weatherEntry.getTime());
-        temperature.setText(weatherEntry.getCurrentTemperature() + "˚C");
-        description.setText(formatDescription(weatherEntry.getWeatherDescription()));
-        humidity.setText(weatherEntry.getHumidity() + "%");
-        windSpeed.setText(weatherEntry.getWindSpeed() + "KM/H " + formatWindDirection(weatherEntry.getWindDirection()));
+        WeatherFragment fragment = new WeatherFragment();
+        fragment.setWeatherEntry(weatherEntry);
+
+        //Replace fragment with new fragment
+        ft.replace(R.id.fragment, fragment);
+        ft.commit();
 
     }
 
-    String formatDescription(String input){
-        return input.substring(0, 1).toUpperCase() + input.substring(1);
-    }
-
-    String formatWindDirection(String input){
-        return input;
-    }
 }

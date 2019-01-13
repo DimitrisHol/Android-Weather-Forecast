@@ -19,7 +19,7 @@
         android:background="@drawable/layout_bg"
         android:ems="10"
         android:fontFamily="sans-serif"
-        android:inputType="textPersonName"
+        android:inputType="text"
         android:text="Location Search"
         android:textAlignment="textStart"
         android:textColor="@android:color/darker_gray"
