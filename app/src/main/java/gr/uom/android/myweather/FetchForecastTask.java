@@ -245,7 +245,10 @@ public class FetchForecastTask extends AsyncTask<String , Object  , List<Weather
         super.onPostExecute(dayForecasts);
 
         Log.v(LOG_TAG , "onPostExecute...");
-        forecastAdapter.setDataSet(dayForecasts);
+
+        if (dayForecasts != null) {
+            forecastAdapter.setDataSet(dayForecasts);
+        }
     }
 
 

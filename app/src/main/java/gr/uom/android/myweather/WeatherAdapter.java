@@ -15,6 +15,11 @@ import java.util.List;
 public class WeatherAdapter extends ArrayAdapter {
 
 
+    private String returnCode;
+    private String cityName;
+    private String countryCode;
+
+
     // Again we are gonna have a list of WeatherEntries
     private List<WeatherEntry> currentWeather;
 
@@ -108,5 +113,29 @@ public class WeatherAdapter extends ArrayAdapter {
 
 
         return convertView;
+    }
+
+    public String getCityName() {
+        return cityName;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
+
+    public String getReturnCode() {
+        return returnCode;
+    }
+
+    public void setReturnCode(String returnCode) {
+        this.returnCode = returnCode;
     }
 }

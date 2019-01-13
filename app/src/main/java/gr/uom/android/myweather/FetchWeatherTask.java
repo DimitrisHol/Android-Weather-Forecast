@@ -2,8 +2,10 @@ package gr.uom.android.myweather;
 
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.JsonReader;
 import android.util.Log;
 
+import org.greenrobot.greendao.database.Database;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,16 +23,23 @@ import java.util.List;
 public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherEntry> > {
 
 
+
     private static final String LOG_TAG = "FetchWeatherTask";
 
     private String cityName; // This needs to come from user input
     private WeatherAdapter weatherAdapter;
 
+    private CityDao cityDao;
 
-    public FetchWeatherTask(WeatherAdapter weatherAdapter, String cityName) {
+
+
+    public FetchWeatherTask(WeatherAdapter weatherAdapter, String cityName , CityDao  cityDao) {
 
         this.weatherAdapter = weatherAdapter;
         this.cityName = cityName;
+        // Object that contains a refference to the database.
+        this.cityDao = cityDao;
+
 
     }
 
@@ -53,6 +62,7 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherE
             final String searchParameter = "type";
             final String unitsParameter = "units";
             final String apiKeyParameter = "APPID";
+
 
             Uri builtURi = Uri.parse(baseUrl).buildUpon()
                     .appendQueryParameter(queryParameter , cityName)
@@ -133,6 +143,8 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherE
 
         // OPW = OpenWeatherMap , this is a mapping of my variables , to the variable names from the JSON file.
 
+        final String OWP_CODE = "cod";
+
         final String OWP_WEATHER = "weather";   // 1 item list , containts weahter descriptions
         final String OWP_description = "main";
         final String OWP_TEMPERATURE = "main";  // contains temperature and humidity readings
@@ -143,9 +155,17 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherE
         final String OWP_WINDSPEED = "speed";
 
 
+        final String OWP_cityName = "name";
+        final String OWP_SYS = "sys";
+        final String OWP_CC = "country";    //country code;
+
+
         JSONObject weatherJSON = new JSONObject(weatherJsonStr);
 
-        if ( weatherJSON.getString("cod").equals("200")){
+        String returnCode =weatherJSON.getString(OWP_CODE);
+        weatherAdapter.setReturnCode(returnCode);
+
+        if ( returnCode.equals("200")){ // We are good to go
 
 
             List<WeatherEntry> currentWeather  = new ArrayList<>();
@@ -174,6 +194,42 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherE
 
             dayWeather.setTime(time);
 
+            // Database :
+
+            String cityName = weatherJSON.getString(OWP_cityName);
+
+            JSONObject system = weatherJSON.getJSONObject(OWP_SYS);
+
+            String countryCode = system.getString(OWP_CC);
+
+            // ACCESS AND WRITE TO THE DATABASE
+
+//            Plan for database : Wait for the FetchTasks to complete, then create new City Object
+            City city = new City();
+
+
+//            Get the correct cityName and countryCode from the FetchTask, since the API provides them.
+
+            // cityName and countryCode are retrieved from the JSON string.
+
+
+//            Check if city is already in database.
+                    List<City> cities = cityDao.queryBuilder()
+                    .where(CityDao.Properties.CityName.eq(cityName))
+                    .list();
+
+            if (cities.size() == 0) {
+
+//                Put them in the object
+                city.setCityName(cityName);
+                city.setCountryCode(countryCode);
+
+//                Insert the city to the database.
+                cityDao.insert(city);
+                Log.d("DAO execution", "Inserted a new city ID = " + city.getId() + " " + cityName + " " + countryCode);
+            }
+
+
 
             Log.v(LOG_TAG , "Object is like this : " + dayWeather.toString());
 
@@ -181,9 +237,11 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherE
 
             return currentWeather;
         }
-        else
-            Log.e(LOG_TAG , "API REQUEST RETURNED CODE : " + weatherJSON.getString("cod"));
+        else {
+
+            Log.e(LOG_TAG, "API REQUEST RETURNED CODE : " + weatherJSON.getString("cod"));
             return new ArrayList<>();
+        }
     }
 
     private String formatTemperatureReadings(double temperature){
@@ -196,7 +254,10 @@ public class FetchWeatherTask extends AsyncTask<String , Object  , List<WeatherE
     protected void onPostExecute(List<WeatherEntry> dayWeather) {
         super.onPostExecute(dayWeather);
         Log.v(LOG_TAG , "onPostExecute...");
-        weatherAdapter.setCurrentWeather(dayWeather);
+
+        if (dayWeather !=null) {
+            weatherAdapter.setCurrentWeather(dayWeather);
+        }
     }
 
 

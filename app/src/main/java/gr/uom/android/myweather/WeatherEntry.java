@@ -2,6 +2,7 @@ package gr.uom.android.myweather;
 
 import java.io.Serializable;
 
+
 public class WeatherEntry implements Serializable {
 
 

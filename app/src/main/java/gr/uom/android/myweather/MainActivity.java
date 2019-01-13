@@ -2,7 +2,7 @@ package gr.uom.android.myweather;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,7 +17,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 
-
+import org.greenrobot.greendao.database.Database;
+import org.greenrobot.greendao.query.Query;
+import org.greenrobot.greendao.query.QueryBuilder;
+import org.greenrobot.greendao.query.WhereCondition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +28,14 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
 
-    //logt --> creates this
     private static final String TAG = "MainActivity";
 
     private String cityName;
     private ForecastAdapter forecastAdapter;
     private WeatherAdapter weatherAdapter;
+
+    // Database
+    private CityDao cityDao;
 
 
     @Override
@@ -38,15 +43,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Getting a refference to the database
+        // Database is used to store the last searches of the user.
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "cities-db");
+        Database db = helper.getWritableDb();
+        DaoSession daoSession = new DaoMaster(db).newSession();
+
+        // Object that contains a refference to the database.
+        cityDao = daoSession.getCityDao();
+
+
+        // Search Button Function
         Button b = findViewById(R.id.searchButton);
         b.setOnClickListener(this);
+
+
+        // CityList Function
         AutoCompleteTextView locationSearch = findViewById(R.id.citynameText);
         locationSearch.setThreshold(1);
         locationSearch.setOnClickListener(this);
 
 
+        // ForecastList onClick Function
         ListView forecastlistView = findViewById(R.id.forecastListView);
-        forecastlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+         forecastlistView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
 
@@ -56,30 +76,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 moreDetails.putExtra("weatherObject" , weatherEntry);
 
                 startActivity(moreDetails);
-
-
             }
         });
 
 
+
+
     }
+
 
     @Override
     public void onClick(View view) {
 
+        // User Pressed the search Button
         if (view.getId() == R.id.searchButton) {
 
             // Getting the name of the city from user input
             EditText nameText = findViewById(R.id.citynameText);
-            String cityName = nameText.getText().toString();
+            String inputcityName = nameText.getText().toString();
 
-            if (cityName != null) {
+            if (inputcityName != null) {
 
-                getWeather("Thessaloniki,GR");
-                getWeatherForecast("Thessaloniki,GR");
+                // Start the 2 Tasks Weather and Forecast
+//                getWeather("Thessaloniki,GR");
+//                getWeatherForecast("Thessaloniki,GR");
 
-//                getWeather(cityName);
-//                getWeatherForecast(cityName);
+                getWeather(inputcityName , cityDao);
+                getWeatherForecast(inputcityName);
+
 
 
                 //Graphics
@@ -90,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ListView listForecast = findViewById(R.id.forecastListView);
                 listForecast.setVisibility(View.VISIBLE);
 
-//                // Hide keyboard after button is pressed. WORKS ONLY ON ANDROID 7.0
+                // Hide keyboard after button is pressed. WORKS ONLY ON ANDROID 7.0
                 InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(Activity.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
 
@@ -98,19 +122,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-                }
+        }
+
+        // User Pressed on the InputText Field
         else if( view.getId() == R.id.citynameText) {
 
 
+            // Erase the text for the user
             AutoCompleteTextView locationSearch = findViewById(R.id.citynameText);
             locationSearch.setText("");
 
+            //Retrieve citiNames from Database and set them to the dropdownList
+            ArrayList<String> Cities = new ArrayList<>();
+            List<City> dbCities = cityDao.queryBuilder().list();
 
-            // Call database to retrieve all the cities the user has put in! (RUSSA)
-            String[] Cities = new String[]{
-                    "Athens,GR", "Thessaloniki,GR",
-            };
+            for (City city : dbCities) {
+                Cities.add(city.getCityName() + ", " + city.getCountryCode());
+            }
 
+            // Set the array from database to be provided to the dropdown List.
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, Cities);
             locationSearch.setAdapter(adapter);
 
@@ -122,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-    private void getWeather(String cityName) {
+    private void getWeather(String cityName , CityDao cityDao) {
 
         ListView listView = findViewById(R.id.weatherListView);
 
@@ -131,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Log.d(TAG , "Starting the Weather AsyncTask...");
 
-        FetchWeatherTask weatherTask = new FetchWeatherTask(weatherAdapter , cityName);
+        FetchWeatherTask weatherTask = new FetchWeatherTask(weatherAdapter , cityName , cityDao);
         weatherTask.execute();
 
 
@@ -156,10 +186,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /*
     //TODO
     USER LOGIN -- STILL TO FIND OUT ( something something περισσοτερες μελοντικες forecasts αν ειναι μέλος.
-    LOCAL DATABASE -- αποθηκευει τις πόλες που εχει βάλει ο χρηστης (επιλογες insert και delete) Μια dropdown list για επιλογη και αναζητηση καιρου, αντι να γράφει ;)
-    >1 ACTIVITIES -- CLICK ON FORECAST --> MORE DETAILED VIEW IN A NEW WINDOW
+    LOCAL DATABASE -- αποθηκευει τις πόλες που εχει βάλει ο χρηστης (επιλογες insert και delete) Μια dropdown list για επιλογη και αναζητηση καιρου, αντι να γράφει ;) --- DONE
+    >1 ACTIVITIES -- CLICK ON FORECAST --> MORE DETAILED VIEW IN A NEW WINDOW --- DONE
     ASYNC TASKS -- FETCHING DATA FROM API ------ DONE
-    INTENTS -- CLICK ON FORECAST --> MORE DETAILED VIEW ( EXPLICIT)
+    INTENTS -- CLICK ON FORECAST --> MORE DETAILED VIEW ( EXPLICIT) --- DONE
     FRAGMENTS -- click on FORECAST --> DETAILED VIEW == FRAGMENT.
     */
 
